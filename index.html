@@ -1,0 +1,256 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Коран">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-180.png">
+<style>*{box-sizing:border-box}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Коран с таджвидом</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Golos+Text:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow reading column (mushaf page), sticky toolbar; list view → reader view */
+:root{
+  --bg:#0e1513; --panel:#16201d; --line:#263330; --fg:#ece8dc; --muted:#94a19b; --gold:#d8b45a; --gold-soft:#d8b45a22;
+  --tj-g:#8f9a95; --tj-m1:#ffc14d; --tj-m2:#ff8c00; --tj-m3:#ff6a3d; --tj-m4:#ef4f4a; --tj-q:#40e0d0; --tj-n:#5cc56a; --tj-t:#4d9dff;
+  --ar:"Scheherazade New","Geeza Pro","Noto Naskh Arabic",serif; --ui:"Golos Text",-apple-system,system-ui,sans-serif;
+  --ar-size:34px; color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#ffffff; --panel:#f5f5f2; --line:#e2ddd0; --fg:#1d2320; --muted:#6c746f; --gold:#9a7417; --gold-soft:#9a741718;
+  --tj-g:#9aa09c; --tj-m1:#c98a00; --tj-m2:#d46a00; --tj-m3:#d9481b; --tj-m4:#c62828; --tj-q:#0f9c8e; --tj-n:#2e8b3a; --tj-t:#1565c0; color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#ffffff; --panel:#f5f5f2; --line:#e2ddd0; --fg:#1d2320; --muted:#6c746f; --gold:#9a7417; --gold-soft:#9a741718;
+  --tj-g:#9aa09c; --tj-m1:#c98a00; --tj-m2:#d46a00; --tj-m3:#d9481b; --tj-m4:#c62828; --tj-q:#0f9c8e; --tj-n:#2e8b3a; --tj-t:#1565c0; color-scheme:light}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--ui);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
+/* list */
+.hero{padding-block:28px 12px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.hero h1{margin:0;font-size:28px;font-weight:600;letter-spacing:-.01em}
+.hero .ar{font-family:var(--ar);font-size:34px;color:var(--gold)}
+.cont{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--gold-soft);border:1px solid var(--gold);border-radius:14px;padding:12px 14px;margin-block:8px 14px}
+.cont b{display:block;font-weight:600}.cont span{color:var(--muted);font-size:14px}
+.search{width:100%;box-sizing:border-box;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.suras{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column}
+.suras button{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 4px;border-bottom:1px solid var(--line)}
+.num{width:36px;height:36px;display:grid;place-items:center;font-size:13px;font-variant-numeric:tabular-nums;color:var(--gold);position:relative}
+.num::before{content:"";position:absolute;inset:3px;border:1.5px solid var(--gold);transform:rotate(45deg);border-radius:4px}
+.num::after{content:"";position:absolute;inset:3px;border:1.5px solid var(--gold);border-radius:4px}
+.nm{min-width:0}.nm b{font-weight:600;display:block}.nm span{color:var(--muted);font-size:13px}
+.sar{font-family:var(--ar);font-size:24px;color:var(--fg);text-align:right}
+/* reader */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar .in{max-width:720px;margin:0 auto;padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));padding-block:6px;display:flex;align-items:center;gap:4px}
+.bar .t{flex:1;min-width:0;text-align:center;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{min-width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-weight:600}
+.ib:active{background:var(--line)}
+.ib.on{color:var(--gold)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;padding-block:10px 2px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--muted)}
+.chip.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);padding-block:8px 4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.head{text-align:center;padding-block:18px 6px}
+.head .ar{font-family:var(--ar);font-size:40px;color:var(--gold);line-height:1.3}
+.head .sub{color:var(--muted);font-size:14px}
+.bism{font-family:var(--ar);font-size:calc(var(--ar-size)*.9);text-align:center;padding-block:10px 4px;direction:rtl}
+.ay{padding-block:16px;border-bottom:1px solid var(--line);scroll-margin-top:70px}
+.ay .a{font-family:var(--ar);font-size:var(--ar-size);line-height:2.05;direction:rtl;text-align:right;word-spacing:.05em}
+.ay .no{font-family:var(--ar);color:var(--gold);font-size:.8em;white-space:nowrap}
+.ay .tr{color:var(--muted);font-size:calc(11px + var(--ar-size)*.2);line-height:1.55;margin-top:6px;display:flex;gap:8px}
+.ay .tr em{font-style:normal;color:var(--gold);font-variant-numeric:tabular-nums;font-size:.85em;padding-top:.1em}
+.notr .tr{display:none}
+.c1{color:var(--tj-g)}.c2{color:var(--tj-m1)}.c3{color:var(--tj-m2)}.c4{color:var(--tj-m3)}.c5{color:var(--tj-m4)}.c6{color:var(--tj-q)}.c7{color:var(--tj-n)}.c8{color:var(--tj-t)}
+.notj [class^="c"]{color:inherit}
+.nav{display:flex;justify-content:space-between;gap:10px;padding-block:22px}
+.nav button{flex:1;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.ay.cur{background:var(--gold-soft);border-radius:12px;box-shadow:0 0 0 8px var(--gold-soft)}
+.player{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.player .in{max-width:720px;margin:0 auto;padding:8px max(12px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:6px}
+.player .info{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player .info small{display:block;color:var(--muted);font-size:12px}
+.pb{min-width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:18px}
+.pb.main{background:var(--gold);color:var(--bg)}
+.pb.on{color:var(--gold)}
+.pb.txt{font-size:13px;border-radius:10px;padding:0 8px}
+body.playing #rwrap{padding-bottom:90px}
+.play{display:inline-flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--gold);text-decoration:none;border:1px solid var(--gold);border-radius:999px;padding:3px 10px}
+.rail{position:fixed;right:env(safe-area-inset-right,0px);top:calc(env(safe-area-inset-top,0px) + 62px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);width:30px;z-index:7;touch-action:none}
+.rail::before{content:"";position:absolute;right:6px;top:0;bottom:0;width:3px;border-radius:2px;background:var(--line)}
+.thumb{position:absolute;right:3px;width:9px;height:52px;border-radius:5px;background:var(--gold)}
+.bub{position:fixed;right:calc(env(safe-area-inset-right,0px) + 38px);background:var(--panel);border:1px solid var(--gold);color:var(--fg);border-radius:10px;padding:4px 10px;font-size:14px;font-variant-numeric:tabular-nums;z-index:7;white-space:nowrap}
+#rwrap,#list{padding-right:max(30px,env(safe-area-inset-right,0px))}
+.zoom{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;z-index:6;transition:opacity .3s}
+.zoom.hide{opacity:0;pointer-events:none}
+.msg{color:var(--muted);text-align:center;padding:40px 0}
+@media (prefers-reduced-motion: reduce){.zoom{transition:none}}
+</style>
+
+</head><body>
+<div id="list" class="wrap">
+  <div class="hero"><h1>Коран</h1><span class="ar">القرآن الكريم</span></div>
+  <button id="cont" class="cont" hidden><div><b id="contT"></b><span id="contS"></span></div></button>
+  <input id="q" class="search" type="search" placeholder="Поиск: номер, название или смысл (Корова, 36, Ясин)" autocomplete="off">
+  <ul id="suras" class="suras"></ul>
+</div>
+
+<div id="reader" hidden>
+  <div class="bar"><div class="in">
+    <button class="ib" id="back" aria-label="К списку сур">☰</button>
+    <button class="ib" id="prevB" aria-label="Предыдущая сура">‹</button>
+    <div class="t" id="rt"></div>
+    <button class="ib" id="nextB" aria-label="Следующая сура">›</button>
+    <button class="ib" id="minus" aria-label="Уменьшить шрифт">A−</button>
+    <button class="ib" id="plus" aria-label="Увеличить шрифт">A+</button>
+  </div></div>
+  <div class="wrap" id="rwrap">
+    <div class="tools">
+      <button class="chip" id="trB">Перевод</button>
+      <button class="chip" id="tjB">Таджвид</button>
+      <button class="chip" id="lgB">Цвета</button>
+      <button class="chip" id="goB">К аяту…</button>
+      <button class="chip" id="thB">Тёмный фон</button>
+    </div>
+    <div class="legend" id="legend" hidden>
+      <span><i style="background:var(--tj-m1)"></i>Мадд 2</span><span><i style="background:var(--tj-m2)"></i>Мадд 2–6</span><span><i style="background:var(--tj-m3)"></i>Мадд 4–5 обязат.</span><span><i style="background:var(--tj-m4)"></i>Мадд 6 необх.</span><span><i style="background:var(--tj-n)"></i>Гунна, ихфа, идгам, икляб</span><span><i style="background:var(--tj-q)"></i>Калькаля</span><span><i style="background:var(--tj-t)"></i>Тафхим (твёрдо)</span><span><i style="background:var(--tj-g)"></i>Не произносится</span>
+    </div>
+    <div id="body"></div>
+    <div class="nav"><button id="prevN"></button><button id="nextN"></button></div>
+  </div>
+</div>
+<div class="zoom hide" id="zoom"></div>
+<div class="rail" id="rail" aria-hidden="true"><div class="thumb" id="thumb"></div></div>
+<div class="bub" id="bub" hidden></div>
+<div class="player" id="player" hidden><div class="in">
+  <button class="pb" id="pPrev" aria-label="Предыдущий аят">⏮</button>
+  <button class="pb main" id="pPlay" aria-label="Пауза">⏸</button>
+  <button class="pb" id="pNext" aria-label="Следующий аят">⏭</button>
+  <div class="info"><span id="pT"></span><small id="pS">Махмуд Халиль аль-Хусари</small></div>
+  <button class="pb txt" id="pRep" aria-label="Повтор аята">×1</button>
+  <button class="pb" id="pX" aria-label="Закрыть плеер">✕</button>
+</div></div>
+<audio id="au" preload="auto" playsinline></audio>
+
+<script>
+let theme=(function(){try{return JSON.parse(localStorage.getItem('q_theme'))||'light'}catch(e){return 'light'}})();
+function applyTheme(){document.documentElement.setAttribute('data-theme',theme);const b=document.getElementById('thB');if(b)b.textContent=theme==='light'?'Тёмный фон':'Белый фон'}
+applyTheme();
+const IDX=[[1,"Аль-Фатиха","الفاتحة",7,"Открывающая Коран"],[2,"Аль-Бакара","البقرة",286,"Корова"],[3,"Аль Имран","آل عمران",200,"Семейство Имрана"],[4,"Ан-Ниса","النساء",176,"Женщины"],[5,"Аль-Маида","المائدة",120,"Трапеза"],[6,"Аль-Анам","الأنعام",165,"Скот"],[7,"Аль-Араф","الأعراف",206,"Ограды"],[8,"Аль-Анфаль","الأنفال",75,"Трофеи"],[9,"Ат-Тауба","التوبة",129,"Покаяние"],[10,"Юнус","يونس",109,"Йунус"],[11,"Худ","هود",123,"Худ"],[12,"Юсуф","يوسف",111,"Йусуф"],[13,"Ар-Раад","الرعد",43,"Гром"],[14,"Ибрахим","ابراهيم",52,"Ибрахим"],[15,"Аль-Хиджр","الحجر",99,"Хиджр "],[16,"Ан-Нахль","النحل",128,"Пчелы"],[17,"Аль-Исра","الإسراء",111,"Ночной перенос"],[18,"Аль-Кахф","الكهف",110,"Пещера"],[19,"Марьям","مريم",98,"Марьям"],[20,"Та Ха","طه",135,"Та Ха "],[21,"Аль-Анбийа","الأنبياء",112,"Пророки"],[22,"Аль-Хадж","الحج",78,"Паломничество"],[23,"Аль-Муминун","المؤمنون",118,"Верующие"],[24,"Ан-Нур","النور",64,"Свет"],[25,"Аль-Фуркан","الفرقان",77,"аль-Фуркан"],[26,"Аш-Шуара","الشعراء",227,"Поэты"],[27,"Ан-Намль","النمل",93,"Муравьи"],[28,"Аль-Касас","القصص",88,"Рассказ"],[29,"Аль-Анкабут","العنكبوت",69,"Паук"],[30,"Ар-Рум","الروم",60,"Римляне"],[31,"Лукман","لقمان",34,"Лукман"],[32,"Ас-Саджда","السجدة",30,"Земной поклон"],[33,"Аль-Ахзаб","الأحزاب",73,"Союзники"],[34,"Саба","سبإ",54,"Сава"],[35,"Фатыр","فاطر",45,"Творец"],[36,"Йа Син","يس",83,"Йа Син"],[37,"Ас-Саффат","الصافات",182,"Выстроившиеся в ряды"],[38,"Сад","ص",88,"Сод"],[39,"Аз-Зумар","الزمر",75,"Толпы"],[40,"Гафир","غافر",85,"Прощающий"],[41,"Фуссылат","فصلت",54,"Разъяснены"],[42,"Аш-Шура","الشورى",53,"Совет"],[43,"Аз-Зухруф","الزخرف",89,"Украшения"],[44,"Ад-Духан","الدخان",59,"Дым"],[45,"Аль-Джасия","الجاثية",37,"Коленопреклоненные"],[46,"Аль-Ахкаф","الأحقاف",35,"Барханы"],[47,"Мухаммад","محمد",38,"Мухаммад"],[48,"Аль-Фатх","الفتح",29,"Победа"],[49,"Аль-Худжурат","الحجرات",18,"Комнаты"],[50,"Каф","ق",45,"Каф"],[51,"Аз-Зарият","الذاريات",60,"Рассеивающие прах"],[52,"Ат-Тур","الطور",49,"Гора"],[53,"Ан-Наджм","النجم",62,"Звезда"],[54,"Аль-Камар","القمر",55,"Месяц"],[55,"Ар-Рахман","الرحمن",78,"Милостивый"],[56,"Аль-Вакиа","الواقعة",96,"Событие"],[57,"Аль-Хадид","الحديد",29,"Железо"],[58,"Аль-Муджадала","المجادلة",22,"Препирающаяся"],[59,"Аль-Хашр","الحشر",24,"Сбор"],[60,"Аль-Мумтахана","الممتحنة",13,"Испытуемая"],[61,"Ас-Сафф","الصف",14,"Ряды"],[62,"Аль-Джумуа","الجمعة",11,"Собрание"],[63,"Аль-Мунафикун","المنافقون",11,"Лицемеры"],[64,"Ат-Тагабун","التغابن",18,"Взаимное обделение"],[65,"Ат-Талак","الطلاق",12,"Развод"],[66,"Ат-Тахрим","التحريم",12,"Запрещение"],[67,"Аль-Мульк","الملك",30,"Власть"],[68,"Аль-Калам","القلم",52,"Письменная трость"],[69,"Аль-Хакка","الحاقة",52,"Неминуемое"],[70,"Аль-Мааридж","المعارج",44,"Ступени"],[71,"Нух","نوح",28,"Нух"],[72,"Аль-Джинн","الجن",28,"Джинны"],[73,"Аль-Муззаммиль","المزمل",20,"Закутавшийся"],[74,"Аль-Муддассир","المدثر",56,"Завернувшийся"],[75,"Аль-Кийама","القيامة",40,"Воскресение"],[76,"Аль-Инсан","الانسان",31,"Человек"],[77,"Аль-Мурсалят","المرسلات",50,"Посылаемые"],[78,"Ан-Наба","النبإ",40,"Весть"],[79,"Ан-Назиат","النازعات",46,"Исторгающие"],[80,"Абаса","عبس",42,"Нахмурился"],[81,"Ат-Таквир","التكوير",29,"Скручивание"],[82,"Аль-Инфитар","الإنفطار",19,"Раскалывание"],[83,"Аль-Мутаффифин","المطففين",36,"Обвешивающие"],[84,"Аль-Иншикак","الإنشقاق",25,"Разверзнется"],[85,"Аль-Бурудж","البروج",22,"Созвездия Зодиака"],[86,"Ат-Тарик","الطارق",17,"Ночной путник"],[87,"Аль-Аля","الأعلى",19,"Всевышний"],[88,"Аль-Гашийа","الغاشية",26,"Покрывающее"],[89,"Аль-Фаджр","الفجر",30,"Заря"],[90,"Аль-Балад","البلد",20,"Город"],[91,"Аш-Шамс","الشمس",15,"Солнце"],[92,"Аль-Лейль","الليل",21,"Ночь"],[93,"Ад-Духа","الضحى",11,"Утро"],[94,"Аш-Шарх","الشرح",8,"Раскрытие"],[95,"Ат-Тин","التين",8,"Смоковница"],[96,"Аль-Алак","العلق",19,"Сгусток крови"],[97,"Аль-Кадр","القدر",5,"Предопределение"],[98,"Аль-Баййина","البينة",8,"Ясное знамение"],[99,"Аз-Зальзаля","الزلزلة",8,"Сотрясение"],[100,"Аль-Адийат","العاديات",11,"Скачущие"],[101,"Аль-Кариа","القارعة",11,"Великое бедствие"],[102,"Ат-Такасур","التكاثر",8,"Страсть к приумножению"],[103,"Аль-Аср","العصر",3,"Предвечернее время"],[104,"Аль-Хумаза","الهمزة",9,"Хулитель"],[105,"Аль-Филь","الفيل",5,"Слон"],[106,"Курайш","قريش",4,"Курейшиты"],[107,"Аль-Маун","الماعون",7,"Мелочь"],[108,"Аль-Каусар","الكوثر",3,"Изобилие"],[109,"Аль-Кафирун","الكافرون",6,"Неверующие"],[110,"Ан-Наср","النصر",3,"Помощь"],[111,"Аль-Масад","المسد",5,"Пальмовые волокна"],[112,"Аль-Ихлас","الإخلاص",4,"Очищение веры"],[113,"Аль-Фалак","الفلق",5,"Рассвет"],[114,"Ан-Нас","الناس",6,"Люди"]];
+const S={get(k,d){try{const v=localStorage.getItem('q_'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('q_'+k,JSON.stringify(v))}catch(e){}}};
+const $=id=>document.getElementById(id);
+const AN=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+let size=S.get('size',34),tr=S.get('tr',true),tj=S.get('tj',true),cur=0,cache={};
+const MIN=20,MAX=80;
+function applySize(show){size=Math.max(MIN,Math.min(MAX,Math.round(size)));document.documentElement.style.setProperty('--ar-size',size+'px');S.set('size',size);if(show){const z=$('zoom');z.textContent='Размер '+Math.round(size/34*100)+'%';z.classList.remove('hide');clearTimeout(applySize.t);applySize.t=setTimeout(()=>z.classList.add('hide'),900)}}
+function applyFlags(){const b=$('body');b.classList.toggle('notr',!tr);b.classList.toggle('notj',!tj);$('trB').classList.toggle('on',tr);$('trB').textContent=tr?'Перевод: вкл':'Перевод: выкл';$('tjB').classList.toggle('on',tj)}
+const norm=s=>s.toLowerCase().replace(/ё/g,'е').replace(/[-‐ʼ'’\s]/g,'');
+function renderList(){
+  const q=norm($('q').value||''),ul=$('suras');ul.innerHTML='';
+  const f=document.createDocumentFragment();
+  IDX.filter(s=>!q||String(s[0])===q||norm(s[1]).includes(q)||norm(s[4]).includes(q)||s[2].includes($('q').value.trim())).forEach(s=>{
+    const li=document.createElement('li'),b=document.createElement('button');
+    b.innerHTML='<span class="num">'+s[0]+'</span><span class="nm"><b></b><span></span></span><span class="sar"></span>';
+    b.querySelector('b').textContent=s[1];b.querySelector('.nm span').textContent=s[4]+' · '+s[3]+' аятов';b.querySelector('.sar').textContent=s[2];
+    b.onclick=()=>{location.hash='s-'+s[0]};li.appendChild(b);f.appendChild(li)});
+  ul.appendChild(f);
+  const p=S.get('pos',null);
+  if(p&&IDX[p.s-1]){$('cont').hidden=false;$('contT').textContent='Продолжить: '+IDX[p.s-1][1];$('contS').textContent='аят '+p.a+' из '+IDX[p.s-1][3];$('cont').onclick=()=>{location.hash='s-'+p.s}}
+}
+async function load(n){if(cache[n])return cache[n];const r=await fetch('data/'+n+'.json');const d=await r.json();cache[n]=d;return d}
+let obs=null;
+async function openSura(n,ayah){
+  cur=n;const s=IDX[n-1];$('list').hidden=true;$('reader').hidden=false;
+  $('rt').textContent=n+'. '+s[1];const body=$('body');body.innerHTML='<div class="msg">Загрузка…</div>';
+  $('prevN').textContent=n>1?'‹ '+IDX[n-2][1]:'';$('prevN').hidden=n<=1;$('prevB').disabled=n<=1;
+  $('nextN').textContent=n<114?IDX[n][1]+' ›':'';$('nextN').hidden=n>=114;$('nextB').disabled=n>=114;
+  let d;try{d=await load(n)}catch(e){body.innerHTML='<div class="msg">Не удалось загрузить суру. Проверьте интернет и откройте её снова.</div>';return}
+  if(cur!==n)return;
+  const f=document.createDocumentFragment();
+  const h=document.createElement('div');h.className='head';h.innerHTML='<div class="ar"></div><div class="sub"></div>';
+  h.querySelector('.ar').textContent='سورة '+s[2];h.querySelector('.sub').textContent=s[1]+' · «'+s[4]+'» · '+s[3]+' аятов';f.appendChild(h);
+  if(n!==1&&n!==9){const b=document.createElement('div');b.className='bism';b.textContent='بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';f.appendChild(b)}
+  d.a.forEach((segs,i)=>{
+    const el=document.createElement('div');el.className='ay';el.id='a'+(i+1);el.dataset.a=i+1;
+    let html='';for(const g of segs){if(typeof g==='string')html+=esc(g);else html+='<span class="c'+g[1]+'">'+esc(g[0])+'</span>'}
+    el.innerHTML='<div class="a">'+html+' <span class="no">﴿'+AN(i+1)+'﴾</span></div><button class="play" data-a="'+(i+1)+'">▶ Слушать</button><div class="tr"><em>'+(i+1)+'</em><span></span></div>';
+    el.querySelector('.tr span').textContent=d.t[i]||'';f.appendChild(el)});
+  body.innerHTML='';body.appendChild(f);applyFlags();
+  if(n<114)load(n+1).catch(()=>{});
+  const target=ayah&&ayah>1?$('a'+ayah):null;
+  if(target)target.scrollIntoView({block:'start'});else window.scrollTo(0,0);
+  if(obs)obs.disconnect();
+  obs=new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){S.set('pos',{s:n,a:+e.target.dataset.a});break}},{rootMargin:'-80px 0px -70% 0px'});
+  body.querySelectorAll('.ay').forEach(x=>obs.observe(x));
+  if(!ayah||ayah===1)S.set('pos',{s:n,a:1});
+}
+const esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function route(){
+  const m=/^#s-(\d+)$/.exec(location.hash);
+  if(m&&+m[1]>=1&&+m[1]<=114){const n=+m[1];const p=S.get('pos',null);openSura(n,p&&p.s===n?p.a:1)}
+  else{$('reader').hidden=true;$('list').hidden=false;cur=0;renderList()}
+}
+$('q').addEventListener('input',renderList);
+$('back').onclick=()=>{location.hash='list'};
+const go=d=>{const n=cur+d;if(n>=1&&n<=114){const p=S.get('pos',null);S.set('pos',{s:n,a:1});location.hash='s-'+n}};
+$('prevB').onclick=$('prevN').onclick=()=>go(-1);$('nextB').onclick=$('nextN').onclick=()=>go(1);
+$('minus').onclick=()=>{size-=4;applySize(true)};$('plus').onclick=()=>{size+=4;applySize(true)};
+$('trB').onclick=()=>{tr=!tr;S.set('tr',tr);applyFlags()};$('tjB').onclick=()=>{tj=!tj;S.set('tj',tj);applyFlags()};
+$('lgB').onclick=()=>{$('legend').hidden=!$('legend').hidden;$('lgB').classList.toggle('on',!$('legend').hidden)};
+$('goB').onclick=()=>{const b=$('goB');if(b.querySelector('input'))return;const max=IDX[cur-1][3];b.innerHTML='<input id="goI" type="number" min="1" max="'+max+'" placeholder="1–'+max+'" style="width:84px;font:inherit;background:transparent;border:0;color:inherit">';const i=$('goI');i.focus();
+  const done=()=>{const v=+i.value;b.textContent='К аяту…';if(v>=1&&v<=max){const t=$('a'+v);if(t)t.scrollIntoView({block:'start'})}};
+  i.addEventListener('keydown',e=>{if(e.key==='Enter')done()});i.addEventListener('blur',done)};
+/* щипок двумя пальцами — увеличение текста, как колёсико на часах */
+let pinch=null;
+const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+document.addEventListener('touchstart',e=>{if(e.touches.length===2&&!$('reader').hidden){pinch={d:dist(e.touches),s:size,a:topAyah()}}},{passive:true});
+document.addEventListener('touchmove',e=>{if(pinch&&e.touches.length===2){e.preventDefault();size=pinch.s*dist(e.touches)/pinch.d;applySize(true)}},{passive:false});
+document.addEventListener('touchend',e=>{if(pinch&&e.touches.length<2){const a=pinch.a;pinch=null;if(a){const t=$('a'+a);if(t)t.scrollIntoView({block:'start'})}}});
+['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+function topAyah(){const els=document.querySelectorAll('.ay');for(const el of els){if(el.getBoundingClientRect().bottom>90)return +el.dataset.a}return 0}
+/* смахивание влево/вправо — соседняя сура */
+let sw=null;
+document.addEventListener('touchstart',e=>{if(e.touches.length===1)sw={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()};else sw=null},{passive:true});
+document.addEventListener('touchend',e=>{if(!sw||$('reader').hidden)return;const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;if(Math.abs(dx)>90&&Math.abs(dy)<40&&Date.now()-sw.t<500)go(dx<0?1:-1);sw=null});
+document.addEventListener('keydown',e=>{if($('reader').hidden||e.target.tagName==='INPUT')return;if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);if(e.key==='+'||e.key==='=')$('plus').click();if(e.key==='-')$('minus').click()});
+$('thB').onclick=()=>{theme=theme==='light'?'dark':'light';S.set('theme',theme);applyTheme()};applyTheme();
+/* бегунок справа: показывает место в суре, тянется пальцем */
+const rail=$('rail'),thumb=$('thumb'),bub=$('bub');let drag=false;
+function maxY(){return Math.max(1,document.documentElement.scrollHeight-innerHeight)}
+function upd(){const h=rail.clientHeight-thumb.offsetHeight;const f=Math.min(1,scrollY/maxY());thumb.style.top=(f*h)+'px';rail.hidden=document.documentElement.scrollHeight<innerHeight*1.5;if(drag){const r=thumb.getBoundingClientRect();bub.style.top=(r.top+r.height/2-14)+'px';bub.textContent=!$('reader').hidden?'аят '+(topAyah()||1)+' из '+IDX[cur-1][3]:Math.round(f*100)+'%'}}
+function seek(e){const r=rail.getBoundingClientRect();const f=Math.max(0,Math.min(1,(e.clientY-r.top-thumb.offsetHeight/2)/(r.height-thumb.offsetHeight)));window.scrollTo(0,f*maxY());upd()}
+rail.addEventListener('pointerdown',e=>{drag=true;bub.hidden=false;rail.setPointerCapture(e.pointerId);seek(e);e.preventDefault()});
+rail.addEventListener('pointermove',e=>{if(drag)seek(e)});
+const stop=()=>{drag=false;bub.hidden=true};rail.addEventListener('pointerup',stop);rail.addEventListener('pointercancel',stop);
+addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);setInterval(upd,1000);
+/* плеер: Хусари, аяты подряд, повтор для заучивания */
+const au=$('au'),pre=new Audio();pre.preload='auto';
+const P={s:0,a:0,bism:false,rep:S.get('rep',1),left:0};
+const url=(s,a)=>'https://everyayah.com/data/Husary_64kbps/'+String(s).padStart(3,'0')+String(a).padStart(3,'0')+'.mp3';
+function mark(){document.querySelectorAll('.ay.cur').forEach(x=>x.classList.remove('cur'));if(P.s===cur&&!P.bism){const el=$('a'+P.a);if(el){el.classList.add('cur');const r=el.getBoundingClientRect();if(r.top<70||r.bottom>innerHeight-90)el.scrollIntoView({block:'center',behavior:'smooth'})}}}
+function info(){$('pT').textContent=(IDX[P.s-1]||[])[1]+' · '+(P.bism?'Бисмилля':'аят '+P.a+' из '+IDX[P.s-1][3]);$('pRep').textContent=P.rep===0?'∞':'×'+P.rep;$('pRep').classList.toggle('on',P.rep!==1)}
+function playAt(s,a,withBism){P.s=s;P.a=a;P.left=P.rep;P.bism=!!withBism&&a===1&&s!==1&&s!==9;au.src=P.bism?url(1,1):url(s,a);au.play().catch(()=>{});$('player').hidden=false;document.body.classList.add('playing');info();mark();
+  const nx=P.bism?url(s,1):(a<IDX[s-1][3]?url(s,a+1):null);if(nx)pre.src=nx;
+  if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:IDX[s-1][1]+' · аят '+a,artist:'Махмуд Халиль аль-Хусари',album:'Коран'})}catch(e){}}}
+au.addEventListener('ended',()=>{if(P.bism){P.bism=false;au.src=url(P.s,P.a);au.play().catch(()=>{});info();mark();return}
+  if(P.rep===0||--P.left>0){au.currentTime=0;au.play().catch(()=>{});return}
+  if(P.a<IDX[P.s-1][3])playAt(P.s,P.a+1);else{$('pPlay').textContent='▶';mark()}});
+au.addEventListener('play',()=>{$('pPlay').textContent='⏸'});au.addEventListener('pause',()=>{$('pPlay').textContent='▶'});
+au.addEventListener('error',()=>{$('pS').textContent='Нет связи — звук не загрузился'});
+au.addEventListener('playing',()=>{$('pS').textContent='Махмуд Халиль аль-Хусари'});
+$('pPlay').onclick=()=>{if(au.paused){if(au.ended&&P.a)playAt(P.s,P.a);else au.play().catch(()=>{})}else au.pause()};
+$('pNext').onclick=()=>{if(P.a<IDX[P.s-1][3])playAt(P.s,P.a+1)};$('pPrev').onclick=()=>{if(P.a>1)playAt(P.s,P.a-1);else playAt(P.s,1)};
+$('pRep').onclick=()=>{P.rep=P.rep===1?3:P.rep===3?0:1;S.set('rep',P.rep);P.left=P.rep;info()};
+$('pX').onclick=()=>{au.pause();$('player').hidden=true;document.body.classList.remove('playing');P.a=0;mark()};
+$('body').addEventListener('click',e=>{const b=e.target.closest('.play');if(b)playAt(cur,+b.dataset.a,true)});
+if('mediaSession' in navigator){try{navigator.mediaSession.setActionHandler('nexttrack',()=>$('pNext').click());navigator.mediaSession.setActionHandler('previoustrack',()=>$('pPrev').click())}catch(e){}}
+const _open=openSura;openSura=async function(n,a){await _open(n,a);mark()};
+applySize(false);window.addEventListener('hashchange',route);route();
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
+</body></html>
